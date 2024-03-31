@@ -56,6 +56,7 @@ subprocess.Popen([chrome_path, target_url])
 time.sleep(5)
 
 pyautogui.click(dropdown_coordinates[0], dropdown_coordinates[1])
+time.sleep(1)
 pyautogui.press('down')
 pyautogui.press('enter')
 time.sleep(30)
