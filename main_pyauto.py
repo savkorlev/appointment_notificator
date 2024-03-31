@@ -87,6 +87,7 @@ for i in range(1,4):  # 3 months
         print('Appointment found!')
         send_email()
         play_music('resources/Anthem of Europe.mp3', 60)
+        break
     else:
         print('No free appointments')
 
