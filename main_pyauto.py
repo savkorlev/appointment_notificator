@@ -61,8 +61,9 @@ pyautogui.press('enter')
 time.sleep(30)
 
 pyautogui.click(verification_coordinates[0], verification_coordinates[1])
+time.sleep(5)
 
-for i in range(1,6):  # 5 months
+for i in range(1,4):  # 3 months
     time.sleep(1)
 
     # Step 1: Take a screenshot of a specific area and save it
