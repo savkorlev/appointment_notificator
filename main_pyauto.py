@@ -8,6 +8,7 @@ import numpy
 import json
 import time
 import pygame
+import sys
 
 # Load the input data
 with open('resources/input_data.json', 'r') as file:
@@ -18,9 +19,29 @@ receiver_email = input_data['receiver_email']
 target_url = input_data['target_url']
 dropdown_coordinates = input_data['dropdown_coordinates']
 verification_coordinates = input_data['verification_coordinates']
-screenshot_coordinates = input_data['screenshot_coordinates']
+table_coordinates = input_data['table_coordinates']
+mainpage_coordinates = input_data['mainpage_coordinates']
 next_coordinates = input_data['next_coordinates']
 close_coordinates = input_data['close_coordinates']
+
+def take_screenshot(region_coordinates, screenshot_path):
+    screenshot_region = (region_coordinates[0], region_coordinates[1], region_coordinates[2], region_coordinates[3])
+    screenshot = pyautogui.screenshot(region=screenshot_region)
+    screenshot.save(screenshot_path)
+
+def compare_images(screenshot_path, reference_path):
+    # Load the images
+    screenshot_image = cv2.imread(screenshot_path)
+    reference_image = cv2.imread(reference_path)
+    # Convert them to grayscale
+    screenshot_gray = cv2.cvtColor(screenshot_image, cv2.COLOR_BGR2GRAY)
+    reference_gray = cv2.cvtColor(reference_image, cv2.COLOR_BGR2GRAY)
+    # Find the difference
+    difference = cv2.absdiff(screenshot_gray, reference_gray)
+    if numpy.any(difference):
+        return True
+    else:
+       return False
 
 def send_email():
     # Setting up the MIME
@@ -53,13 +74,23 @@ def play_music(file_path, duration_in_seconds):
 chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 
 subprocess.Popen([chrome_path, target_url])
-time.sleep(5)
+time.sleep(10)
+
+mainpage_region = (mainpage_coordinates[0], mainpage_coordinates[1], mainpage_coordinates[2], mainpage_coordinates[3])
+screenshot_path = 'output/mainpage.png'
+take_screenshot(mainpage_region, screenshot_path)
+reference_path = 'resources/mainpage.png'
+difference = compare_images(screenshot_path, reference_path)
+if difference:
+    print('Error while loading the page, exiting the script.')
+    pyautogui.click(close_coordinates[0], close_coordinates[1])
+    sys.exit()
 
 pyautogui.click(dropdown_coordinates[0], dropdown_coordinates[1])
 time.sleep(1)
 pyautogui.press('down')
 pyautogui.press('enter')
-time.sleep(30)
+time.sleep(90)  # TODO: improve
 
 pyautogui.click(verification_coordinates[0], verification_coordinates[1])
 time.sleep(5)
@@ -67,26 +98,16 @@ time.sleep(5)
 for i in range(1,4):  # 3 months
     time.sleep(1)
 
-    # Step 1: Take a screenshot of a specific area and save it
-    screenshot_region = (screenshot_coordinates[0], screenshot_coordinates[1], 595, 128)
-    screenshot = pyautogui.screenshot(region=screenshot_region)
+    table_region = (table_coordinates[0], table_coordinates[1], table_coordinates[2], table_coordinates[3])
     screenshot_path = f'output/table_{i}.png'
-    screenshot.save(screenshot_path)
-
-    # Step 2: Load the reference image and the screenshot for comparison
+    take_screenshot(table_region, screenshot_path)
     reference_path = f'resources/table_{i}.png'
-    reference_image = cv2.imread(reference_path)
-    screenshot_image = cv2.imread(screenshot_path)
-    # Step 3: Compare the images (simple absolute difference here, can be more complex)
-    # Convert images to grayscale for simpler comparison
-    reference_gray = cv2.cvtColor(reference_image, cv2.COLOR_BGR2GRAY)
-    screenshot_gray = cv2.cvtColor(screenshot_image, cv2.COLOR_BGR2GRAY)
-    difference = cv2.absdiff(reference_gray, screenshot_gray)
-
-    if numpy.any(difference):
+    difference = compare_images(screenshot_path, reference_path)
+    if difference:
         print('Appointment found!')
         send_email()
         play_music('resources/Anthem of Europe.mp3', 60)
+        break
     else:
         print('No free appointments')
 
