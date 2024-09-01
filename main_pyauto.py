@@ -90,12 +90,13 @@ pyautogui.click(dropdown_coordinates[0], dropdown_coordinates[1])
 time.sleep(1)
 pyautogui.press('down')
 pyautogui.press('enter')
-time.sleep(90)  # TODO: improve
+time.sleep(1)  # TODO: improve
 
 pyautogui.click(verification_coordinates[0], verification_coordinates[1])
+pyautogui.moveTo(1, 1)
 time.sleep(5)
 
-for i in range(1,4):  # 3 months
+for i in range(1,3):  # 2 months
     time.sleep(1)
 
     table_region = (table_coordinates[0], table_coordinates[1], table_coordinates[2], table_coordinates[3])
